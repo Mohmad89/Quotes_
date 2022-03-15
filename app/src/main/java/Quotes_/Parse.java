@@ -1,8 +1,11 @@
 package Quotes_;
-import Quotes_.Contact;
 import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
 
-import java.io.InputStream;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -25,8 +28,43 @@ public class Parse {
 
 
     }
+    public boolean apiChooseQuote () throws IOException {
 
-    public Contact chooseQuote () {
+        // get json data
+        URL url = new URL ("https://favqs.com/api/qotd");
+
+        //making a connection to the API
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        //specify the method for the connection
+        connection.setRequestMethod("GET");
+
+        // Read the response from the API
+        InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream());
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+        String APIData = bufferedReader.readLine();
+
+        // parse data into java object
+        Gson gson = new Gson();
+        QuoteData quoteData = gson.fromJson(APIData, QuoteData.class);
+        System.out.println(quoteData);
+
+        // save the response from API to a file
+        File quoteFile = new File ("./data.json") ;
+        try (FileWriter quoteFileWriter = new FileWriter(quoteFile)) {
+            gson.toJson(quoteData, quoteFileWriter);
+            }
+
+        if (quoteData != null){
+            return true;
+        }else {
+            return false;
+        }
+        }
+
+
+    public Contact fileChooseQuote() {
+
         Random random = new Random();
         int low = 0;
         int high = contactArray.length;
@@ -35,7 +73,7 @@ public class Parse {
     }
 
     // Read File That Found Inside Resource Folder
-    private InputStream getFileAsIOStream(final String fileName)
+    public InputStream getFileAsIOStream(final String fileName)
     {
         InputStream ioStream = this.getClass().getClassLoader().getResourceAsStream(fileName);
 
